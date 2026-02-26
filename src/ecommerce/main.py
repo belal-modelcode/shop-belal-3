@@ -11,6 +11,7 @@ from ecommerce.products.api import categories_router
 from ecommerce.orders.api import router as orders_router
 from ecommerce.inventory.api import router as inventory_router
 from ecommerce.reports.api import router as reports_router
+from ecommerce.reports.api import views_router as reports_views_router
 
 
 @asynccontextmanager
@@ -34,6 +35,7 @@ app.include_router(products_router)
 app.include_router(orders_router)
 app.include_router(inventory_router)
 app.include_router(reports_router)
+app.include_router(reports_views_router)
 
 
 @app.get("/")

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Reports{% endblock %} - E-commerce</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f4f6f9; color: #1e293b; line-height: 1.6; }
+        nav { background: #1e293b; color: #fff; padding: 1rem 2rem; display: flex; align-items: center; gap: 2rem; }
+        nav a { color: #94a3b8; text-decoration: none; font-size: 0.9rem; padding: 0.4rem 0.75rem; border-radius: 6px; transition: background .15s, color .15s; }
+        nav a:hover, nav a.active { color: #fff; background: #334155; }
+        nav .brand { font-weight: 700; font-size: 1.1rem; color: #fff; margin-right: auto; }
+        .container { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
+        h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .card { background: #fff; border-radius: 10px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .card .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: .05em; color: #64748b; margin-bottom: .25rem; }
+        .card .value { font-size: 1.5rem; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        th, td { padding: 0.75rem 1rem; text-align: left; }
+        th { background: #f8fafc; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .04em; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+        td { border-bottom: 1px solid #f1f5f9; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8fafc; }
+        .text-right { text-align: right; }
+        .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+        .badge-warn { background: #fef3c7; color: #92400e; }
+        .badge-ok { background: #d1fae5; color: #065f46; }
+        {% block extra_style %}{% endblock %}
+    </style>
+</head>
+<body>
+    <nav>
+        <span class="brand">E-commerce Reports</span>
+        <a href="/reports/view/sales" {% if active == 'sales' %}class="active"{% endif %}>Sales</a>
+        <a href="/reports/view/inventory" {% if active == 'inventory' %}class="active"{% endif %}>Inventory</a>
+        <a href="/reports/view/products" {% if active == 'products' %}class="active"{% endif %}>Products</a>
+        <a href="/reports/view/categories" {% if active == 'categories' %}class="active"{% endif %}>Categories</a>
+        <a href="/reports/view/users" {% if active == 'users' %}class="active"{% endif %}>Users</a>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

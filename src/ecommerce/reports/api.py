@@ -1,9 +1,11 @@
 """Reporting API endpoints."""
 
 from decimal import Decimal
+from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select, func
@@ -12,6 +14,11 @@ from ecommerce.database import get_session
 from ecommerce.models import Order, OrderItem, Product, User, Inventory, Category
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+views_router = APIRouter(prefix="/reports/view", tags=["reports-views"])
+
+templates = Jinja2Templates(
+    directory=Path(__file__).resolve().parent.parent / "templates"
+)
 
 
 class SalesReport(BaseModel):
@@ -256,3 +263,64 @@ async def get_user_activity(
     # Sort by total spent descending
     activity.sort(key=lambda x: x.total_spent, reverse=True)
     return activity
+
+
+# ── Jinja template views ──────────────────────────────────────────────
+
+
+@views_router.get("/sales")
+async def view_sales_report(
+    request: Request,
+    session: AsyncSession = Depends(get_session),
+):
+    report = await get_sales_report(session)
+    return templates.TemplateResponse(
+        request, "reports/sales.html", {"report": report, "active": "sales"}
+    )
+
+
+@views_router.get("/inventory")
+async def view_inventory_report(
+    request: Request,
+    low_stock_threshold: int = 10,
+    session: AsyncSession = Depends(get_session),
+):
+    report = await get_inventory_report(low_stock_threshold, session)
+    return templates.TemplateResponse(
+        request, "reports/inventory.html", {"report": report, "active": "inventory"}
+    )
+
+
+@views_router.get("/products")
+async def view_product_performance(
+    request: Request,
+    session: AsyncSession = Depends(get_session),
+):
+    products = await get_product_performance(session)
+    return templates.TemplateResponse(
+        request, "reports/products.html", {"products": products, "active": "products"}
+    )
+
+
+@views_router.get("/categories")
+async def view_category_performance(
+    request: Request,
+    session: AsyncSession = Depends(get_session),
+):
+    categories = await get_category_performance(session)
+    return templates.TemplateResponse(
+        request,
+        "reports/categories.html",
+        {"categories": categories, "active": "categories"},
+    )
+
+
+@views_router.get("/users")
+async def view_user_activity(
+    request: Request,
+    session: AsyncSession = Depends(get_session),
+):
+    users = await get_user_activity(session)
+    return templates.TemplateResponse(
+        request, "reports/users.html", {"users": users, "active": "users"}
+    )

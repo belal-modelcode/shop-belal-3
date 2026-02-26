@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}User Activity{% endblock %}
+
+{% block content %}
+<h1>User Activity</h1>
+{% if users %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th class="text-right">Total Orders</th>
+            <th class="text-right">Total Spent</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.user_name }}</td>
+            <td>{{ u.user_email }}</td>
+            <td class="text-right">{{ u.total_orders }}</td>
+            <td class="text-right">${{ "%.2f"|format(u.total_spent) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No user data available.</p>
+{% endif %}
+{% endblock %}

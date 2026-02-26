@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Category Performance{% endblock %}
+
+{% block content %}
+<h1>Category Performance</h1>
+{% if categories %}
+<table>
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th class="text-right">Products</th>
+            <th class="text-right">Units Sold</th>
+            <th class="text-right">Total Revenue</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in categories %}
+        <tr>
+            <td>{{ c.category_name }}</td>
+            <td class="text-right">{{ c.product_count }}</td>
+            <td class="text-right">{{ c.units_sold }}</td>
+            <td class="text-right">${{ "%.2f"|format(c.total_revenue) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No category data available.</p>
+{% endif %}
+{% endblock %}
