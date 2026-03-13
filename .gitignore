@@ -23,3 +23,13 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment
+.env
+
+# pytest
+.pytest_cache/
+
+# Coverage
+htmlcov/
+.coverage
