@@ -1,15 +1,14 @@
 """Database connection and session management."""
 
-from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 
-DATABASE_URL = "sqlite+aiosqlite:///./ecommerce.db"
+from ecommerce.config import settings
 
-engine: AsyncEngine = create_async_engine(DATABASE_URL, echo=False)
+engine: AsyncEngine = create_async_engine(settings.database_url, echo=False)
 
 
 async def init_db() -> None:

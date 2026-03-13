@@ -1,73 +1,63 @@
-"""Product catalog API endpoints."""
+"""Product catalog API endpoints — route definitions only."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
 
 from ecommerce.database import get_session
-from ecommerce.models import Product, Category, Inventory
+from ecommerce.products.schemas import (
+    CategoryCreate,
+    CategoryRead,
+    ProductCreate,
+    ProductRead,
+)
+from ecommerce.products import service
 
 router = APIRouter(prefix="/products", tags=["products"])
 categories_router = APIRouter(prefix="/categories", tags=["categories"])
 
 
-@categories_router.post("", response_model=Category)
+@categories_router.post(
+    "", response_model=CategoryRead, status_code=status.HTTP_201_CREATED
+)
 async def create_category(
-    category: Category, session: AsyncSession = Depends(get_session)
-) -> Category:
+    data: CategoryCreate, session: AsyncSession = Depends(get_session)
+) -> CategoryRead:
     """Create a new category."""
-    session.add(category)
-    await session.commit()
-    await session.refresh(category)
-    return category
+    category = await service.create_category(session, data)
+    return CategoryRead.model_validate(category)
 
 
-@categories_router.get("", response_model=list[Category])
+@categories_router.get("", response_model=list[CategoryRead])
 async def list_categories(
     session: AsyncSession = Depends(get_session),
-) -> list[Category]:
+) -> list[CategoryRead]:
     """List all categories."""
-    result = await session.execute(select(Category))
-    return result.scalars().all()
+    categories = await service.list_categories(session)
+    return [CategoryRead.model_validate(c) for c in categories]
 
 
-@router.post("", response_model=Product)
+@router.post("", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
 async def create_product(
-    product: Product, session: AsyncSession = Depends(get_session)
-) -> Product:
+    data: ProductCreate, session: AsyncSession = Depends(get_session)
+) -> ProductRead:
     """Create a new product."""
-    # Verify category exists if provided
-    if product.category_id:
-        category = await session.get(Category, product.category_id)
-        if not category:
-            raise HTTPException(status_code=404, detail="Category not found")
-
-    session.add(product)
-    await session.commit()
-    await session.refresh(product)
-
-    # Initialize inventory for new product
-    inventory = Inventory(product_id=product.id, quantity=0, reserved=0)
-    session.add(inventory)
-    await session.commit()
-    await session.refresh(product)
-
-    return product
+    product = await service.create_product(session, data)
+    return ProductRead.model_validate(product)
 
 
-@router.get("/{product_id}", response_model=Product)
+@router.get("/{product_id}", response_model=ProductRead)
 async def get_product(
     product_id: int, session: AsyncSession = Depends(get_session)
-) -> Product:
+) -> ProductRead:
     """Get product by ID."""
-    product = await session.get(Product, product_id)
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return product
+    product = await service.get_product(session, product_id)
+    return ProductRead.model_validate(product)
 
 
-@router.get("", response_model=list[Product])
-async def list_products(session: AsyncSession = Depends(get_session)) -> list[Product]:
+@router.get("", response_model=list[ProductRead])
+async def list_products(
+    session: AsyncSession = Depends(get_session),
+) -> list[ProductRead]:
     """List all products."""
-    result = await session.execute(select(Product))
-    return result.scalars().all()
+    products = await service.list_products(session)
+    return [ProductRead.model_validate(p) for p in products]
