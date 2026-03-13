@@ -1,41 +1,35 @@
-"""User API endpoints."""
+"""User API endpoints — route definitions only."""
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
 
 from ecommerce.database import get_session
-from ecommerce.models import User
+from ecommerce.users.schemas import UserCreate, UserRead
+from ecommerce.users import service
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.post("", response_model=User)
-async def create_user(user: User, session: AsyncSession = Depends(get_session)) -> User:
+@router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    data: UserCreate, session: AsyncSession = Depends(get_session)
+) -> UserRead:
     """Create a new user."""
-    # Check if email already exists
-    result = await session.execute(select(User).where(User.email == user.email))
-    existing = result.scalar_one_or_none()
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    session.add(user)
-    await session.commit()
-    await session.refresh(user)
-    return user
+    user = await service.create_user(session, data)
+    return UserRead.model_validate(user)
 
 
-@router.get("/{user_id}", response_model=User)
-async def get_user(user_id: int, session: AsyncSession = Depends(get_session)) -> User:
+@router.get("/{user_id}", response_model=UserRead)
+async def get_user(
+    user_id: int, session: AsyncSession = Depends(get_session)
+) -> UserRead:
     """Get user by ID."""
-    user = await session.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+    user = await service.get_user(session, user_id)
+    return UserRead.model_validate(user)
 
 
-@router.get("", response_model=list[User])
-async def list_users(session: AsyncSession = Depends(get_session)) -> list[User]:
+@router.get("", response_model=list[UserRead])
+async def list_users(session: AsyncSession = Depends(get_session)) -> list[UserRead]:
     """List all users."""
-    result = await session.execute(select(User))
-    return result.scalars().all()
+    users = await service.list_users(session)
+    return [UserRead.model_validate(u) for u in users]
